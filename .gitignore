@@ -31,4 +31,4 @@ build/
 .vscode/
 
 /qod_db
-#derby.log
+derby.log
