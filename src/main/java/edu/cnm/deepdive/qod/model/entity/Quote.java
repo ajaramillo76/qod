@@ -1,15 +1,14 @@
 package edu.cnm.deepdive.qod.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import edu.cnm.deepdive.qod.view.FlatQuote;
 import edu.cnm.deepdive.qod.view.FlatSource;
+import java.net.URI;
 import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,18 +17,19 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.server.EntityLinks;
 import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
+@Component
 @Entity
 @Table(
     indexes = {
@@ -39,6 +39,8 @@ import org.springframework.lang.NonNull;
     }
 )
 public class Quote implements FlatQuote {
+
+  private static EntityLinks entityLinks;
 
   @NonNull
   @Id
@@ -103,6 +105,11 @@ public class Quote implements FlatQuote {
   }
 
   @Override
+  public URI getHref() {
+    return entityLinks.linkForItemResource(Quote.class, id).toUri();
+  }
+
+  @Override
   public int hashCode() {
     return Objects.hash(id, text); // TODO Compute lazily & cache.
   }
@@ -119,6 +126,14 @@ public class Quote implements FlatQuote {
     return result;
   }
 
+  @PostConstruct
+  private void init() {
+    entityLinks.toString();
+  }
 
+  @Autowired
+  private void setEntityLinks(EntityLinks entityLinks) {
+    Quote.entityLinks = entityLinks;
+  }
 
 }
