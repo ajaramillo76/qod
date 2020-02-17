@@ -1,6 +1,9 @@
 package edu.cnm.deepdive.qod.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import edu.cnm.deepdive.qod.view.FlatQuote;
+import edu.cnm.deepdive.qod.view.FlatSource;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -13,6 +16,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -27,7 +32,7 @@ import org.springframework.lang.NonNull;
         @Index(columnList = "created")
     }
 )
-public class Source {
+public class Source implements FlatSource {
 
   @NonNull
   @Id
@@ -53,27 +58,29 @@ public class Source {
   @Column(length = 1024, nullable = false, updatable = true, unique = true)
   private String name;
 
-  @JsonIgnore
-  @ManyToMany(fetch = FetchType.LAZY, mappedBy = "sources",
+  @NonNull
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "source",
       cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+  @OrderBy("text ASC")
+  @JsonSerialize(contentAs = FlatQuote.class)
   private Set<Quote> quotes = new LinkedHashSet<>();
 
-  @NonNull
+  @Override
   public UUID getId() {
     return id;
   }
 
-  @NonNull
+  @Override
   public Date getCreated() {
     return created;
   }
 
-  @NonNull
+  @Override
   public Date getUpdated() {
     return updated;
   }
 
-  @NonNull
+  @Override
   public String getName() {
     return name;
   }

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("sources")
+@RequestMapping("/sources")
 public class SourceController {
 
   private final SourceRepository repository;
@@ -48,23 +48,23 @@ public class SourceController {
     return repository.findAllByOrderByName();
   }
 
-  @GetMapping(value = "{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Source get(@PathVariable UUID id) {
     return repository.findById(id).get();
   }
 
-  @DeleteMapping(value = "{id}")
+  @DeleteMapping(value = "/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@PathVariable UUID id) {
     repository.findById(id).ifPresent((source) -> {
       Set<Quote> quotes = source.getQuotes();
-      quotes.forEach((quote) -> quote.getSources().remove(source));
+      quotes.forEach((quote) -> quote.setSource(null));
       quotes.clear();
       repository.delete(source);
     });
   }
 
-  @PutMapping(value = "{id}",
+  @PutMapping(value = "/{id}",
       consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public Source put(@PathVariable UUID id, @RequestBody Source updated){
     Source source = get(id);
