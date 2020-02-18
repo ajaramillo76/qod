@@ -1,5 +1,6 @@
-package edu.cnm.deepdive.qod.controller;
+package edu.cnm.deepdive.qod.controller.rest;
 
+import edu.cnm.deepdive.qod.controller.SearchTermTooShortException;
 import edu.cnm.deepdive.qod.model.entity.Quote;
 import edu.cnm.deepdive.qod.model.entity.Source;
 import edu.cnm.deepdive.qod.service.QuoteRepository;
@@ -32,8 +33,7 @@ public class QuoteController {
   private final SourceRepository sourceRepository;
 
   @Autowired
-  public QuoteController(QuoteRepository quoteRepository,
-      SourceRepository sourceRepository) {
+  public QuoteController(QuoteRepository quoteRepository, SourceRepository sourceRepository) {
     this.quoteRepository = quoteRepository;
     this.sourceRepository = sourceRepository;
   }
@@ -58,6 +58,16 @@ public class QuoteController {
 
     return quoteRepository.getAllByTextContainsOrderByTextAsc(fragment);
   }
+
+  @GetMapping(value = "/random", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Quote getRandom() {
+    return quoteRepository.getRandom().get();
+  }
+
+  @GetMapping(value = "/random", produces = MediaType.TEXT_PLAIN_VALUE)
+  public String getRandomPlain() {
+    return getRandom().getText();
+    }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Quote get(@PathVariable UUID id) {
@@ -85,13 +95,13 @@ public class QuoteController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@PathVariable UUID id) {
     // Code below throws NoSuchElementException if id is not in database.
-    //    Quote quote = get(id);
+//    Quote quote = get(id);
 //    quoteRepository.delete(quote);
-    quoteRepository.findById(id).ifPresent((quoteRepository::delete));
+    quoteRepository.findById(id).ifPresent(quoteRepository::delete);
   }
 
-  @PutMapping(value = "/{quoteId}/sources/{sourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Quote attach(@PathVariable UUID quoteId, UUID sourceId) {
+  @PutMapping(value = "/{quoteId}/source/{sourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Quote attach(@PathVariable UUID quoteId, @PathVariable UUID sourceId) {
     Quote quote = get(quoteId);
     Source source = sourceRepository.findById(sourceId).get();
     if (!source.equals(quote.getSource())) {
@@ -101,8 +111,8 @@ public class QuoteController {
     return quote;
   }
 
-  @DeleteMapping(value = "/{quoteId}/sources/{sourceId}")
-  public Quote detach(@PathVariable UUID quoteId, UUID sourceId) {
+  @DeleteMapping(value = "/{quoteId}/source/{sourceId}")
+  public Quote detach(@PathVariable UUID quoteId, @PathVariable UUID sourceId) {
     Quote quote = get(quoteId);
     Source source = sourceRepository.findById(sourceId).get();
     if (source.equals(quote.getSource())) {
